@@ -142,9 +142,13 @@ func determineStartAndEndPoints(oid bson.ObjectId, input []string, output []stri
 	start_latitude, start_longitude := getcoordinatesfromdatabase(oid)
 
 	for index := 0; index < len(input); index++ {
-
+		fmt.Println("Parsing Index===========================================", index)
+		fmt.Println("Is this index visited?", visited[index])
+		fmt.Println("INPUT ARRRAYY ", input)
+		fmt.Println("OUTPUT ARRRAYY ", output)
 		if !visited[index] && len(input) > 0 {
 			destinationID := bson.ObjectIdHex(input[index])
+			fmt.Println("Next Destinaton========", destinationID)
 
 			end_Latitude, end_Longitude := getcoordinatesfromdatabase(destinationID)
 			priceestimateapi := "https://sandbox-api.uber.com/v1/estimates/price?start_latitude=<start_latitude>&start_longitude=<start_longitude>&end_latitude=<end_latitude>&end_longitude=<end_longitude>&server_token=j6SYjh7dD1Q5E8MSJYvh4FQ4N_JdEu8PuBkNDhPQ"
@@ -152,12 +156,20 @@ func determineStartAndEndPoints(oid bson.ObjectId, input []string, output []stri
 			priceestimatestruct := getPriceEstimateAPIresults(priceestimatestring)
 
 			cheapestCostArray, durationArray, distanceArray = calculateEstimatesBetweenNodes(priceestimatestruct, index)
+			fmt.Println("cheapestCostArray========", cheapestCostArray)
+			fmt.Println("durationArray========", durationArray)
+			fmt.Println("distanceArray========", distanceArray)
 
 		}
 	}
 	lessCost, smallIndex := smallestNonZeroIndex(cheapestCostArray[:])
 	lessDuration, _ := smallestNonZeroIndex(durationArray)
 	lessDistance, _ := smallestNonZeroIndexFloat(distanceArray)
+
+	fmt.Println("lessCost========", lessCost)
+	fmt.Println("lessDuration========", lessDuration)
+	fmt.Println("lessDistance========", lessDistance)
+	fmt.Println("smallIndex========", smallIndex)
 
 	isVisited[smallIndex] = true
 	visited[smallIndex] = true
@@ -171,9 +183,11 @@ func determineStartAndEndPoints(oid bson.ObjectId, input []string, output []stri
 	fmt.Println("Visited destinations :", visited[smallIndex])
 
 	if smallIndex > len(input)-1 {
+		fmt.Println("smallIndex value in IF", smallIndex)
 		startingPointOID = bson.ObjectIdHex(input[len(input)-1])
 
 	} else {
+		fmt.Println("smallIndex value in else", smallIndex)
 		startingPointOID = bson.ObjectIdHex(input[smallIndex])
 	}
 
@@ -181,9 +195,14 @@ func determineStartAndEndPoints(oid bson.ObjectId, input []string, output []stri
 		fmt.Println("HERE$$$$$")
 		output = append(output, input[len(input)-1])
 		input = append(input[:len(input)-1], input[len(input):]...)
+
+		fmt.Println("Revised Input aray", input)
+		fmt.Println("Revised output aray", output)
 	} else {
 		output = append(output, input[smallIndex])
 		input = append(input[:smallIndex], input[smallIndex+1:]...)
+		fmt.Println("Revised Input aray", input)
+		fmt.Println("Revised output aray", output)
 	}
 
 	cheapestCostArray = cheapestCostArray[0:0]
@@ -197,6 +216,9 @@ func determineStartAndEndPoints(oid bson.ObjectId, input []string, output []stri
 
 			startingPointOID = bson.ObjectIdHex(output[len(output)-1])
 			input = append(input, t.Starting_from_location_id)
+			fmt.Println("Visiting the starting point++++++++")
+			fmt.Println("startingPointOID", startingPointOID)
+			fmt.Println("INPUT array", input)
 			determineStartAndEndPoints(startingPointOID, input, output, rw)
 		} else {
 
@@ -227,6 +249,15 @@ func determineStartAndEndPoints(oid bson.ObjectId, input []string, output []stri
 				http.Error(rw, err.Error(), http.StatusInternalServerError)
 				return
 			}
+			totalcost = 0
+			totalduration = 0
+			totaldistance = 0.0
+			input = input[:0]
+			output = output[:0]
+			smallIndex = 0
+			cheapestCostArray = cheapestCostArray[:0]
+			distanceArray = distanceArray[:0]
+			durationArray = durationArray[:0]
 
 			rw.Header().Set("Content-Type", "application/json")
 			rw.WriteHeader(201)
@@ -259,8 +290,12 @@ func calculateEstimatesBetweenNodes(priceestimatestruct UberAPI, index int) (low
 	fmt.Println("Unsorted LowEstimate array : ", lowEstimate)
 	fmt.Println("Unsorted duration array : ", duration)
 	fmt.Println("Unsorted distance array : ", distance)
+	if lowEstimate[0] == 0 {
+		cheapestCostArray = append(cheapestCostArray, lowEstimate[1])
+	} else {
+		cheapestCostArray = append(cheapestCostArray, lowEstimate[0])
+	}
 
-	cheapestCostArray = append(cheapestCostArray, lowEstimate[0])
 	durationArray = append(durationArray, duration[0])
 	distanceArray = append(distanceArray, distance[0])
 	return cheapestCostArray, durationArray, distanceArray
@@ -544,6 +579,9 @@ func planTrip(rw http.ResponseWriter, req *http.Request, ps httprouter.Params) {
 	initialstartingPointOID = bson.ObjectIdHex(t.Starting_from_location_id)
 	clonemgo()
 	input := t.Location_ids
+	fmt.Println("Initial Startingpoint =========", initialstartingPointOID)
+	fmt.Println("Initial Input array  =========", input)
+	fmt.Println("Initial Output array  =========", output)
 	determineStartAndEndPoints(initialstartingPointOID, input, output, rw)
 }
 
