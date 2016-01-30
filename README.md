@@ -2,7 +2,7 @@
 
 This is a basic simple trip planning application, built as a continuation to Cmpe273-Assignment2. In this application, we use the same database that contains the places entered in Cmpe273-Assignment2.
 
-1) POST http://localhost:8084/trips
+* 1) POST http://localhost:8084/trips
 
 Here using the POST command, we try creating finding an optimum path depending on the shortest distance. The user provides the id of the starting location and the id's of the places to be travelled
 
@@ -48,11 +48,11 @@ The application makes use of Uber api to provide the total cost and the time tak
 }
 ```
 
-2) GET http://localhost:8084/trips/5666373d66bae316887f04ac
+* 2) GET http://localhost:8084/trips/5666373d66bae316887f04ac
 
 As each record in the databse is stored with a unique Id, this function only retrieves the record on providing the Id in the link
 
-3) PUT http://localhost:8084/trips/5666373d66bae316887f04ac/request
+* 3) PUT http://localhost:8084/trips/5666373d66bae316887f04ac/request
 
 Starts a call to uber from each destination till the end destination
 
