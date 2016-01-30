@@ -4,7 +4,7 @@ To implement a trip planner using uber api
 
 **Working
 
-This is a basic simple trip planning application, built as a continuation to [Uber-Trip-Planner-in-GO-programming-language](https://github.com/sagardafle/REST-API-CRUD-operations-using-GO-Language). 
+This is a basic simple trip planning application, built as a continuation to [REST API CRUD operations using GO Language](https://github.com/sagardafle/REST-API-CRUD-operations-using-GO-Language). 
 In this application, we use the same database that contains the places entered in Cmpe273-Assignment2.
 
 * 1) POST http://localhost:8080/trips
